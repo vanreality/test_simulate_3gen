@@ -1,1 +1,6 @@
 scripts/
+data/
+results/
+.nextflow*
+work/
+.nf-core.yml
