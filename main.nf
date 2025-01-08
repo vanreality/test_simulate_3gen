@@ -119,7 +119,7 @@ workflow {
     ch_merged_bams_beds
         .combine(ch_num_turns)
         .map { meta1, bam, bed, meta2, num_turns -> 
-            def new_meta = [id: "${meta1.id}_${meta2.id}"]
+            def new_meta = [id: "${meta1.id}_${meta2.id}", dataset: meta1.id, simulate: meta2.id]
             [new_meta, bam, bed, num_turns]
         }
         .set { ch_simulation_input }
@@ -137,4 +137,13 @@ workflow {
         ch_fasta.map { meta, fasta -> fasta },
         ch_fai.map { meta, fai -> fai },
     )
+
+    // TODO Compare the simulated and real methylation calls
+    // METHYLDACKEL_EXTRACT.out.bedgraph
+    //     .combine(METHYLDACKEL_EXTRACT_SIMULATED.out.bedgraph)
+    //     .set { ch_bedgraphs }
+
+    // EVALUATE(
+    //     ch_bedgraphs
+    // )
 }
