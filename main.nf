@@ -56,7 +56,7 @@ process SIMULATE_SEQUENCES {
 workflow {
     // Parse input samplesheet.csv
     Channel
-        .fromPath('samplesheet.csv')
+        .fromPath(params.input)
         .splitCsv(header: true)
         .map { row -> 
             def meta = [id: row.label]
@@ -66,7 +66,7 @@ workflow {
         .set { ch_bams }
 
     Channel
-        .fromPath('samplesheet.csv')
+        .fromPath(params.input)
         .splitCsv(header: true)
         .map { row -> 
             def meta = [id: row.label]
@@ -89,7 +89,7 @@ workflow {
 
     SAMTOOLS_MERGE(ch_bams, ch_fasta, ch_fai)
 
-    SAMTOOLS_SORT(SAMTOOLS_MERGE.out.bam)
+    SAMTOOLS_SORT(SAMTOOLS_MERGE.out.bam, ch_fasta)
 
     METHYLDACKEL_EXTRACT(
         SAMTOOLS_SORT.out.bam,

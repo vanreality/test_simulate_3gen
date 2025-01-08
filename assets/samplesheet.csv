@@ -1,0 +1,7 @@
+label,bam,bed
+test1,test11.bam,test1.bed
+test2,test21.bam,test2.bed
+test3,test31.bam,test3.bed
+test3,test32.bam,test3.bed
+test4,test41.bam,test1.bed
+test4,test42.bam,test1.bed
