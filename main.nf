@@ -1,6 +1,7 @@
 include { SAMTOOLS_FAIDX } from './modules/nf-core/samtools/faidx/main.nf'
 include { SAMTOOLS_MERGE } from './modules/nf-core/samtools/merge/main.nf'
 include { SAMTOOLS_SORT } from './modules/nf-core/samtools/sort/main.nf'
+include { SAMTOOLS_INDEX } from './modules/nf-core/samtools/index/main.nf'
 include { METHYLDACKEL_EXTRACT } from './modules/nf-core/methyldackel/extract/main.nf' 
 include { METHYLDACKEL_EXTRACT as METHYLDACKEL_EXTRACT_SIMULATED } from './modules/nf-core/methyldackel/extract/main.nf'
 
@@ -90,9 +91,13 @@ workflow {
     SAMTOOLS_MERGE(ch_bams, ch_fasta, ch_fai)
 
     SAMTOOLS_SORT(SAMTOOLS_MERGE.out.bam, ch_fasta)
+    ch_merged_bam = SAMTOOLS_SORT.out.bam
+
+    SAMTOOLS_INDEX(ch_merged_bam)
+    ch_merged_bam_bai = SAMTOOLS_INDEX.out.bai
 
     METHYLDACKEL_EXTRACT(
-        SAMTOOLS_SORT.out.bam,
+        ch_merged_bam.join(ch_merged_bam_bai).map {meta, bam, bai -> tuple(meta, bam, bai)},
         ch_fasta.map { meta, fasta -> fasta },
         ch_fai.map { meta, fai -> fai },
     )
