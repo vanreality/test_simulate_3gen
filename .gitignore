@@ -4,3 +4,4 @@ results/
 .nextflow*
 work/
 .nf-core.yml
+images/

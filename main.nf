@@ -115,11 +115,11 @@ workflow {
         }
         .set { ch_num_turns }
 
-    // Join with other channels
+    // Combine channels
     ch_merged_bams_beds
         .combine(ch_num_turns)
         .map { meta1, bam, bed, meta2, num_turns -> 
-            def new_meta = meta1 + meta2
+            def new_meta = [id: "${meta1.id}_${meta2.id}"]
             [new_meta, bam, bed, num_turns]
         }
         .set { ch_simulation_input }
