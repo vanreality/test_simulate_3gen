@@ -33,12 +33,11 @@ process SIMULATE_SEQUENCES {
     tag "${meta.id}"
 
     input:
-    tuple val(meta), path(bam), path(bed), val(num_turns)
-    path(cpgtable)
+    tuple val(meta), path(bam), path(bed), path(cpgtable), val(num_turns)
     path(fasta)
 
     output:
-    tuple val(meta), path('*_simulated.bam'), emit: bam
+    tuple val(meta), path('*_simulated.bam'), path('*_simulated.bam.bai'), emit: bam
 
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
@@ -122,18 +121,16 @@ workflow {
 
     // Combine channels
     ch_merged_bams_beds
+        .join(GENERATE_CPG_TABLE.out.cpgtable)
         .combine(ch_num_turns)
-        .map { meta1, bam, bed, meta2, num_turns -> 
+        .map { meta1, bam, bed, cpgtable, meta2, num_turns -> 
             def new_meta = [id: "${meta1.id}_${meta2.id}", dataset: meta1.id, simulate: meta2.id]
-            [new_meta, bam, bed, num_turns]
+            [new_meta, bam, bed, cpgtable, num_turns]
         }
         .set { ch_simulation_input }
 
-    ch_simulation_input.view()
-
     SIMULATE_SEQUENCES(
         ch_simulation_input, 
-        GENERATE_CPG_TABLE.out.cpgtable.map { meta, cpgtable -> cpgtable }, 
         ch_fasta.map { meta, fasta -> fasta }
     )
 
