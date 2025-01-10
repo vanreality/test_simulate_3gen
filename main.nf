@@ -9,7 +9,7 @@ process GENERATE_CPG_TABLE {
     tag "${meta.id}"
 
     input:
-    tuple val(meta), path(bam), path(bed)
+    tuple val(meta), path(bam), path(bai), path(bed)
     path(fasta)
 
     output:
@@ -33,7 +33,7 @@ process SIMULATE_SEQUENCES {
     tag "${meta.id}"
 
     input:
-    tuple val(meta), path(bam), path(bed), path(cpgtable), val(num_turns)
+    tuple val(meta), path(bam), path(bai), path(bed), path(cpgtable), val(num_turns)
     path(fasta)
 
     output:
@@ -101,7 +101,8 @@ workflow {
         ch_fai.map { meta, fai -> fai },
     )
 
-    SAMTOOLS_SORT.out.bam
+    ch_merged_bam
+        .join(ch_merged_bam_bai)
         .join(ch_beds)
         .set { ch_merged_bams_beds }
 
@@ -123,9 +124,9 @@ workflow {
     ch_merged_bams_beds
         .join(GENERATE_CPG_TABLE.out.cpgtable)
         .combine(ch_num_turns)
-        .map { meta1, bam, bed, cpgtable, meta2, num_turns -> 
+        .map { meta1, bam, bai, bed, cpgtable, meta2, num_turns -> 
             def new_meta = [id: "${meta1.id}_${meta2.id}", dataset: meta1.id, simulate: meta2.id]
-            [new_meta, bam, bed, cpgtable, num_turns]
+            [new_meta, bam, bai, bed, cpgtable, num_turns]
         }
         .set { ch_simulation_input }
 
